@@ -11,7 +11,7 @@ module.exports = defineConfig({
     viewport: { width: 1280, height: 720 },
   },
   webServer: {
-    command: 'npx live-server --port=8000 --no-browser',
+    command: 'npx live-server --port=Number(8000) --no-browser',
     port: 8000,
     reuseExistingServer: true,
   },

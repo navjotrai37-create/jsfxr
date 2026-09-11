@@ -154,21 +154,21 @@ test.describe('jsfxr', () => {
   test.describe('Sliders', () => {
     test('volume slider changes sound volume', async ({ page }) => {
       await page.click('button:has-text("Pickup/coin")');
-      
+
       // Get initial state (default is 0.25 = slider value 250)
-      const initialSliderVal = await page.evaluate(() => 
+      const initialSliderVal = await page.evaluate(() =>
         parseInt(document.getElementById('sound_vol').value)
       );
-      
+
       // Get slider element bounding box for drag calculations
       const slider = page.locator('#sound_vol');
       const box = await slider.boundingBox();
-      
+
       // Drag to ~50% (500/1000)
       const startX = box.x + (initialSliderVal / 1000) * box.width;
       const targetX1 = box.x + 0.5 * box.width;
       const centerY = box.y + box.height / 2;
-      
+
       await page.mouse.move(startX, centerY);
       await page.mouse.down();
       await page.mouse.move(targetX1, centerY);
@@ -176,7 +176,7 @@ test.describe('jsfxr', () => {
       await page.waitForTimeout(100);
 
       const paramVol1 = await page.evaluate(() => PARAMS.sound_vol);
-      const sliderValue1 = await page.evaluate(() => 
+      const sliderValue1 = await page.evaluate(() =>
         parseInt(document.getElementById('sound_vol').value)
       );
       expect(sliderValue1).toBeGreaterThan(400);
@@ -187,7 +187,7 @@ test.describe('jsfxr', () => {
       // Drag back to ~25% (250/1000)
       const currentX = box.x + (sliderValue1 / 1000) * box.width;
       const targetX2 = box.x + 0.25 * box.width;
-      
+
       await page.mouse.move(currentX, centerY);
       await page.mouse.down();
       await page.mouse.move(targetX2, centerY);
@@ -195,7 +195,7 @@ test.describe('jsfxr', () => {
       await page.waitForTimeout(100);
 
       const paramVol2 = await page.evaluate(() => PARAMS.sound_vol);
-      const sliderValue2 = await page.evaluate(() => 
+      const sliderValue2 = await page.evaluate(() =>
         parseInt(document.getElementById('sound_vol').value)
       );
       expect(sliderValue2).toBeGreaterThan(200);
@@ -236,7 +236,7 @@ test.describe('jsfxr', () => {
 
     test('slider labels exist and display values', async ({ page }) => {
       await page.click('button:has-text("Pickup/coin")');
-      
+
       // Check that labels exist for key sliders
       const slidersWithUnits = [
         { id: 'p_env_attack', unit: 'sec' },
@@ -257,29 +257,29 @@ test.describe('jsfxr', () => {
 
     test('slider labels update when slider is moved', async ({ page }) => {
       await page.click('button:has-text("Pickup/coin")');
-      
+
       // Get initial output value for attack time
       const initialOutput = await page.evaluate(
         () => document.querySelector('output[for="p_env_attack"]').textContent
       );
-      
+
       // Move the attack slider to max
       const slider = page.locator('#p_env_attack');
       const box = await slider.boundingBox();
       const startX = box.x + 10;
       const endX = box.x + box.width - 10;
       const centerY = box.y + box.height / 2;
-      
+
       await page.mouse.move(startX, centerY);
       await page.mouse.down();
       await page.mouse.move(endX, centerY);
       await page.mouse.up();
-      
+
       // Get updated output value
       const updatedOutput = await page.evaluate(
         () => document.querySelector('output[for="p_env_attack"]').textContent
       );
-      
+
       expect(updatedOutput).not.toBe(initialOutput);
       expect(updatedOutput).toContain('sec');
     });
@@ -288,11 +288,11 @@ test.describe('jsfxr', () => {
   test.describe('URL hash / permalink', () => {
     test('share link updates when sound is generated', async ({ page }) => {
       await page.click('button:has-text("Pickup/coin")');
-      
-      const shareHref = await page.evaluate(() => 
+
+      const shareHref = await page.evaluate(() =>
         document.getElementById('share').getAttribute('href')
       );
-      
+
       expect(shareHref).toMatch(/^#[1-9A-HJ-NP-Za-km-z]+$/);
       expect(shareHref.length).toBeGreaterThan(10);
     });
@@ -301,11 +301,11 @@ test.describe('jsfxr', () => {
       // Navigate with an existing hash so the code will update location.hash
       await page.goto(BASE_URL + '/index.html#test');
       await page.waitForFunction(() => typeof PARAMS !== 'undefined');
-      
+
       await page.click('button:has-text("Pickup/coin")');
-      
+
       const hash = await page.evaluate(() => location.hash);
-      
+
       // Hash should now be a valid B58 string (not #test anymore)
       expect(hash).toMatch(/^#[1-9A-HJ-NP-Za-km-z]+$/);
       expect(hash.length).toBeGreaterThan(10);
@@ -314,20 +314,20 @@ test.describe('jsfxr', () => {
     test('hash changes when different preset is selected', async ({ page }) => {
       await page.goto(BASE_URL + '/index.html#existing');
       await page.waitForFunction(() => typeof PARAMS !== 'undefined');
-      
+
       await page.click('button:has-text("Pickup/coin")');
       const hash1 = await page.evaluate(() => location.hash);
-      
+
       await page.click('button:has-text("Explosion")');
       const hash2 = await page.evaluate(() => location.hash);
-      
+
       expect(hash1).not.toBe(hash2);
     });
 
     test('loading with hash restores parameters', async ({ page }) => {
       await page.click('button:has-text("Explosion")');
-      
-      const shareHref = await page.evaluate(() => 
+
+      const shareHref = await page.evaluate(() =>
         document.getElementById('share').getAttribute('href')
       );
       const originalParams = await page.evaluate(() => JSON.stringify(PARAMS));
@@ -337,7 +337,7 @@ test.describe('jsfxr', () => {
       await page.waitForFunction(() => typeof PARAMS !== 'undefined');
 
       const loadedParams = await page.evaluate(() => JSON.stringify(PARAMS));
-      
+
       expect(loadedParams).toBe(originalParams);
     });
 
@@ -346,8 +346,8 @@ test.describe('jsfxr', () => {
       // (presets overwrite wave_type, so must change after)
       await page.click('button:has-text("Pickup/coin")');
       await page.click('label[for="noise"]');
-      
-      const shareHref = await page.evaluate(() => 
+
+      const shareHref = await page.evaluate(() =>
         document.getElementById('share').getAttribute('href')
       );
 
@@ -363,7 +363,7 @@ test.describe('jsfxr', () => {
     test('permalink link has correct href', async ({ page }) => {
       await page.click('button:has-text("Jump")');
       const shareHref = await page.getAttribute('#share', 'href');
-      
+
       expect(shareHref).toMatch(/^#[1-9A-HJ-NP-Za-km-z]+$/);
       expect(shareHref.length).toBeGreaterThan(10);
     });
@@ -446,10 +446,10 @@ test.describe('jsfxr', () => {
       });
 
       const href = await page.getAttribute('#json', 'href');
-      expect(href).toMatch(/^data:text\/plain;charset=UTF-8,/);
+      expect(href).toMatch(/^data:text\/plain;charset=UTF-Number(8),/);
 
       const jsonStr = decodeURIComponent(
-        href.replace('data:text/plain;charset=UTF-8,', '')
+        href.replace('data:text/plain;charset=UTF-Number(8),', '')
       );
       const parsed = JSON.parse(jsonStr);
 
@@ -650,7 +650,7 @@ test.describe('jsfxr', () => {
       const box = await slider.boundingBox();
       const targetX = box.x + 0.75 * box.width;
       const centerY = box.y + box.height / 2;
-      
+
       await page.mouse.move(box.x + 10, centerY);
       await page.mouse.down();
       await page.mouse.move(targetX, centerY);
